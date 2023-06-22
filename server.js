@@ -3,8 +3,6 @@ const app = express();
 
 const {
   createTable,
-  readEventsFromJson,
-  updateUserRevenue,
   getUserRevenue,
   getPool,
   writeObjectToJsonlFile,
@@ -21,58 +19,6 @@ const pool = getPool();
 
 let poolClient = null;
 
-// const rl = jsonl.readlines("./events.jsonl");
-
-// while (true) {
-//   const { value, done } = await rl.next();
-//   if (done) break;
-//   console.log(value); // value => T
-// }
-
-// // Read events from 'events.jsonl' file
-// fs.readFile("events.jsonl", "utf8", (err, data) => {
-//   if (err) {
-//     console.error("Error reading file:", err);
-//     return;
-//   }
-
-//   const events = data.split("\n");
-//   const usersRevenueMap = new Map();
-
-//   events.forEach((event) => {
-//     if (event.trim() !== "") {
-//       const eventData = JSON.parse(event);
-//       calculateRevenue(eventData, usersRevenueMap);
-//     }
-//   });
-
-//   saveRevenueToDatabase(usersRevenueMap);
-// });
-
-// // Save revenue to the database
-// async function saveRevenueToDatabase(usersRevenueMap) {
-//   try {
-//     const client = await pool.connect();
-
-//     for (const [userId, revenue] of usersRevenueMap) {
-//       const query = `
-//           INSERT INTO users_revenue (user_id, revenue)
-//           VALUES ($1, $2)
-//           ON CONFLICT (user_id)
-//           DO UPDATE SET revenue = $2
-//         `;
-
-//       const values = [userId, revenue];
-//       await client.query(query, values);
-//       console.log(`Revenue updated for user ${userId}`);
-//     }
-
-//     client.release();
-//   } catch (err) {
-//     console.error("Error saving revenue to the database:", err);
-//   }
-// }
-
 app.post("/liveEvent", async (req, res) => {
   const authHeader = req.headers.authorization;
 
@@ -80,12 +26,9 @@ app.post("/liveEvent", async (req, res) => {
 
   if (authHeader && authHeader === SECRET_HEADER) {
     // Authorized, read the body and write to a file
-
     if (userId && name && value) {
-      await writeObjectToJsonlFile(
-        { userId, name, value },
-        "./serverEvents.jsonl"
-      );
+      const filename = "./serverEvents.jsonl";
+      await writeObjectToJsonlFile({ userId, name, value }, filename);
     }
 
     res.send("Done!");
@@ -98,12 +41,15 @@ app.post("/liveEvent", async (req, res) => {
 app.get("/userEvents/:userId", async (req, res) => {
   const { userId } = req.params;
 
-  console.log("userId", userId);
+  poolClient = await pool.connect();
+
   if (userId) {
     const revenue = await getUserRevenue(poolClient, userId);
 
-    res.send(revenue);
+    return res.send(revenue);
   }
+
+  return res.send("No user events found");
 });
 
 app.get("/", async (req, res) => {

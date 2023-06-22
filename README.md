@@ -48,3 +48,13 @@ npm run start-client
 ```
 To start the client process that connects to the server.
 
+## Running Data Processor
+In order to start the data processor on a specific file, you can execute the following commands:
+```shell
+node data_processor.js serverEvents.jsonl
+```
+Or just: 
+```shell
+npm run start-process
+```
+To start the process on the default file: serverEvents.jsonl

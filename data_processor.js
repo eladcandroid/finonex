@@ -42,11 +42,22 @@ function calculateRevenue(eventData) {
     for (const event of events) {
       calculateRevenue(event);
     }
+    try {
+      await poolClient.query("BEGIN");
 
-    for (const [userId, value] of usersRevenueMap) {
-      if (userId && value) {
-        await updateUserRevenue(poolClient, userId, value);
+      for (const [userId, value] of usersRevenueMap) {
+        if (userId && value) {
+          await updateUserRevenue(poolClient, userId, value);
+        }
       }
+
+      await poolClient.query("COMMIT");
+      console.log("Bulk insert successful.");
+    } catch (error) {
+      await poolClient.query("ROLLBACK");
+      console.error("Error executing bulk insert:", error);
+    } finally {
+      pool.end();
     }
   } catch (error) {
     console.log("Error: ", error);
