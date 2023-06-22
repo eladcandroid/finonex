@@ -31,7 +31,7 @@ Execute the following command:
 ```shell
 npm install
 ```
-# Step 3: Start the project
+## Step 4: Start the project
 Once the Docker Compose services are running, you can start your project. It will load the environment variables from the .env file and connect to the PostgreSQL database.
 
 To start the project, run the following commands:
@@ -48,7 +48,7 @@ npm run start-client
 ```
 To start the client process that connects to the server.
 
-## Running Data Processor
+## Step 5: Running Data Processor
 In order to start the data processor on a specific file, you can execute the following commands:
 ```shell
 node data_processor.js serverEvents.jsonl
